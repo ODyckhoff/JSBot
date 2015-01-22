@@ -50,6 +50,14 @@ function joinChannel(channel) {
 	}
 }
 
+function getNicks(channel) {
+	if (sock.isConnceted()) {
+		sock.sendData('NICKS ' + channel);
+	} else {
+		console.error('Not connected to server!');
+	}
+}
+
 function sendPrivMsg(resp, message)  {
 	if (sock.isConnected()) {
 		var dataArr = limitStrLen(message);
