@@ -1,6 +1,6 @@
 var request = require('request');
 
-var stats = { };
+var stats = { 'global': {}, 'channel': {} };
 var deps = { 'privmsg': {}, 'quit': {}, 'part': {}, 'join': {}, 'mode': {}, 'kick': {}, 'invite': {}, 'server': {}};
 
 function handler(irc) {
@@ -130,17 +130,17 @@ function cmdShow(irc, data, params) {
 function addPrivmsgLog(irc, data) {
 	// Data: time, type, nickname, host, channel, message.
 
-	if(!data.channel in stats) {
-		stats[data.channel] = {};
-		stats[data.channel].user = {};
+	if(!data.channel in stats['channel']) {
+		stats['channel'][data.channel] = {};
+		stats['channel'][data.channel]['user'] = {};
 	}
 
-	if(!data.nickname in stats[data.channel].user) {
-		stats[data.channel].user[data.nickname] = {};
-		stats[data.channel].user[data.nickname].privmsg = [];
+	if(!data.nickname in stats['channel'][data.channel]['user']) {
+		stats['channel'][data.channel]['user'][data.nickname] = {};
+		stats['channel'][data.channel]['user'][data.nickname]['privmsg'] = [];
 	}
 
-	stats[data.channel].user[data.nickname].privmsg.push(data);
+	stats[data.channel]['user'][data.nickname]['privmsg'].push(data);
 }
 
 function addQuitLog(irc, data) {
