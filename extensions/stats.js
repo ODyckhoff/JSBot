@@ -1,22 +1,35 @@
 var request = require('request');
 
-var stats = { 'global': {}, 'channel': {} };
-var deps = { 'privmsg': {}, 'quit': {}, 'part': {}, 'join': {}, 'mode': {}, 'kick': {}, 'invite': {}, 'server': {}};
+var stats = { 
+	'global': {
+		'count': {
+			'privmsg': 0,
+                        'joins': 0
+		}
+	},
+	'channel': {
+		'count': {
+			'privmsg': 0,
+                        'joins': 0
+		}
+	}
+};
+var deps = { 'privmsg': [], 'quit': [], 'part': [], 'join': [], 'mode': [], 'kick': [], 'invite': [], 'server': [] };
 
 function handler(irc) {
 
 	irc.addCallBack(
 		'privmsg',
 		function(data) {
-			if(/^!stats/.test(data.message)) {
-				// Command for the plugin.
-				cmdHandler(irc, data);
-			}
-
 			// Add to stats.
 			addPrivmsgLog(irc, data);
 
 			updateStats('privmsg');
+
+			if(/^!stats/.test(data.message)) {
+				// Command for the plugin.
+				cmdHandler(irc, data);
+			}
 		}
 	);
 
@@ -105,6 +118,9 @@ function cmdHandler(irc, data) {
 	else if(groups = /^!stats case (.+)/.exec(data.message)) {
 		cmdCase(irc, data, groups[1]);
 	}
+	else if(groups = /^!stats help(?: (.+))?/.exec(data.message)) {
+		cmdHelp(irc, data, groups[1]);
+	}
 }
 
 function cmdDefault(irc, data) {
@@ -119,6 +135,15 @@ function cmdCase(irc, data, params) {
 
 }
 
+function cmdHelp(irc, data, params) {
+	irc.sendPrivMsg(data.channel, "This is some help text"
+					+ ( params !== undefined
+						? " for '" + params + "'."
+						: "."
+					)
+	);
+}
+
 function cmdShow(irc, data, params) {
 
 	irc.sendPrivMsg(data.channel, "total number of privmsgs: " + stats['global']['count']['privmsg']);
@@ -130,7 +155,7 @@ function cmdShow(irc, data, params) {
 function addPrivmsgLog(irc, data) {
 	// Data: time, type, nickname, host, channel, message.
 
-	if(!data.channel in stats['channel']) {
+/*	if(!data.channel in stats['channel']) {
 		stats['channel'][data.channel] = {};
 		stats['channel'][data.channel]['user'] = {};
 	}
@@ -138,9 +163,12 @@ function addPrivmsgLog(irc, data) {
 	if(!data.nickname in stats['channel'][data.channel]['user']) {
 		stats['channel'][data.channel]['user'][data.nickname] = {};
 		stats['channel'][data.channel]['user'][data.nickname]['privmsg'] = [];
-	}
-
-	stats[data.channel]['user'][data.nickname]['privmsg'].push(data);
+	}*/
+        var arr = [ data ];
+        var arr2 = { 'privmsg': arr };
+        var arr3 = { 'user': { } };
+            arr3.user[data.nickname] = arr2;
+            stats[data.channel] = arr3;
 }
 
 function addQuitLog(irc, data) {
@@ -183,14 +211,17 @@ function addServerLog(irc, data) {
 function updateStats(type) {
 
 	for(var dependant in deps[type]) {
-		dependant(type);
+		deps[type][dependant](type);
+		//dependant(type);
 	}
 
 }
 
 // Dependants.
 
-function counter(type) {
+var counter = function(type) {
+
+	console.log(stats);
 
 	switch(type) {
 		case 'privmsg':
@@ -198,6 +229,8 @@ function counter(type) {
 			stats['channel']['count']['privmsg']++;
 	}
 }
+
+deps.privmsg.push(counter);
 
 
 // Exporter.
