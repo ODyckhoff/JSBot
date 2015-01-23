@@ -52,7 +52,7 @@ function joinChannel(channel) {
 
 function getNicks(channel) {
 	if (sock.isConnceted()) {
-		sock.sendData('NICKS ' + channel);
+		sock.sendData('NAMES ' + channel);
 	} else {
 		console.error('Not connected to server!');
 	}

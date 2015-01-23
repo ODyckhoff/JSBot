@@ -246,6 +246,6 @@ function makeReply(data, engine) {
 }
 
 module.exports = function(module_holder) {
-    module_holder['sed'] = handler;
+	module_holder['sed'] = handler;
 };
 

@@ -84,10 +84,44 @@ function handler(irc) {
 	);
 }
 
-// Command Functions.
+// Command Helper Functions.
 
 function cmdHandler(irc, data) {
-	// Data: time, type, nickname, host, channel, message. 
+	// Data: time, type, nickname, host, channel, message.
+	
+	var groups;
+
+	if(/^!stats\s*$/.test(data.message)) {
+		cmdDefault(irc, data);
+	}
+	else if(groups = /^!stats show (.+)/.exec(data.message)) {
+		cmdShow(irc, data, groups[1]);
+	}
+	else if(groups = /^!stats admin (.+)/.exec(data.message)) {
+		if(statsAuth(data.nickname)) {
+			cmdAdmin(irc, data, groups[1]);
+		}
+	}
+	else if(groups = /^!stats case (.+)/.exec(data.message)) {
+		cmdCase(irc, data, groups[1]);
+	}
+}
+
+function cmdDefault(irc, data) {
+
+}
+
+function cmdAdmin(irc, data, params) {
+
+}
+
+function cmdCase(irc, data, params) {
+
+}
+
+function cmdShow(irc, data, params) {
+
+	irc.sendPrivMsg(data.channel, "total number of privmsgs: " + stats['global']['count']['privmsg']);
 
 }
 
@@ -96,12 +130,17 @@ function cmdHandler(irc, data) {
 function addPrivmsgLog(irc, data) {
 	// Data: time, type, nickname, host, channel, message.
 
-	if(data.nickname in stats['user']) {
-		
+	if(!data.channel in stats) {
+		stats[data.channel] = {};
+		stats[data.channel].user = {};
 	}
-	else {
 
+	if(!data.nickname in stats[data.channel].user) {
+		stats[data.channel].user[data.nickname] = {};
+		stats[data.channel].user[data.nickname].privmsg = [];
 	}
+
+	stats[data.channel].user[data.nickname].privmsg.push(data);
 }
 
 function addQuitLog(irc, data) {
@@ -143,8 +182,23 @@ function addServerLog(irc, data) {
 
 function updateStats(type) {
 
+	for(var dependant in deps[type]) {
+		dependant(type);
+	}
 
 }
+
+// Dependants.
+
+function counter(type) {
+
+	switch(type) {
+		case 'privmsg':
+			stats['global']['count']['privmsg']++;
+			stats['channel']['count']['privmsg']++;
+	}
+}
+
 
 // Exporter.
 
