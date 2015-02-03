@@ -57,7 +57,7 @@ function handler(collective) {
 		'privmsg',
 		function(data) {
 
-			var rgx = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/g;
+			var rgx = /(((https?:\/\/)[\da-zA-Z\.-]+)((.*\?)(.*))?)/;
 
 			var groups = rgx.exec(data.message);
 
@@ -66,7 +66,7 @@ function handler(collective) {
 				var found = false;
 
 				for (var blackitem in blacklist) {
-					if (groups[2].indexOf(blacklist) != -1) {
+					if (groups[2].indexOf(blacklist[blackitem]) != -1) {
 						found = true;
 						break;
 					}
@@ -75,7 +75,7 @@ function handler(collective) {
 				if (found) 
 					return;
 
-				var url = groups[1];
+				var url = groups[2];
 
 			    request(
 			    	url, 
