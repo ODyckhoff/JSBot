@@ -227,7 +227,11 @@ var counter = function(type) {
 		case 'privmsg':
 			stats['global']['count']['privmsg']++;
 			stats['channel']['count']['privmsg']++;
+		break;
 	}
+
+	stats['global']['count']['all']++;
+	stats['channel']['count']['all']++;
 }
 
 deps.privmsg.push(counter);
